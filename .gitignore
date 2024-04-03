@@ -3,5 +3,5 @@ venv/
 110 copy/
 other/
 test/
-statisticalData.py
+vocDataset.py
 test.py
