@@ -5,3 +5,4 @@ other/
 test/
 vocDataset.py
 test.py
+*.png

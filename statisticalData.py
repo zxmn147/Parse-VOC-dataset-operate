@@ -10,8 +10,7 @@ def checkargs(args):
     if  not os.path.isdir(args.xmlPath):
         raise Exception("xmlPath not folder")
 
-def drawHistogram(clas):
-
+def drawHistogram(clas, args):
     # 資料
     # x, y
     categories = list(clas.keys()) 
@@ -22,7 +21,6 @@ def drawHistogram(clas):
     # 分離排序後的類別和值
     sortedCategories = [x[0] for x in sortedData]
     sortedValues = [x[1] for x in sortedData]
-    # plt.barh(sortedCategories, sortedValues)  
 
     plt.bar(sortedCategories, sortedValues)  
     # 在每個長條上加上值標籤
@@ -32,9 +30,12 @@ def drawHistogram(clas):
     # 設定標題與標籤
     plt.title('Histogram of Data Distribution')
     plt.xticks(rotation=-20)
-    plt.savefig('Distribution.png')
-    plt.show()
 
+    if args.save:
+        plt.savefig('Distribution.png')
+        
+    plt.show()
+    
 def statisticalData(args):
     checkargs(args)
     p = Path(args.xmlPath)
@@ -51,12 +52,13 @@ def statisticalData(args):
             else:
                 clas[obj[0].text] = 1
     print(f'clas: {clas}')
-    drawHistogram(clas)
+    drawHistogram(clas, args)
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--xmlPath', type=str, required=True, help='xml folder Path')
+    parser.add_argument('--save', type=bool, default=True, help='save the Histogram img')
     args = parser.parse_args()
     
     statisticalData(args)
