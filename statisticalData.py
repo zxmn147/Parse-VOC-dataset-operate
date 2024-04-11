@@ -10,6 +10,14 @@ def checkargs(args):
     if  not os.path.isdir(args.xmlPath):
         raise Exception("xmlPath not folder")
 
+def saveLabelFile(clas):
+    with open('original.txt', 'w') as f:
+        for i, label in enumerate(clas.keys()):
+            if i != len(clas.keys())-1:
+                f.writelines(label+'\n')
+            else:
+                f.writelines(label)
+
 def drawHistogram(clas, args):
     # 資料
     # x, y
@@ -37,7 +45,6 @@ def drawHistogram(clas, args):
     plt.show()
     
 def statisticalData(args):
-    checkargs(args)
     p = Path(args.xmlPath)
     grep_json =  list(p.glob('*.xml'))
     clas = {}
@@ -52,6 +59,7 @@ def statisticalData(args):
             else:
                 clas[obj[0].text] = 1
     print(f'clas: {clas}')
+    saveLabelFile(clas)
     drawHistogram(clas, args)
 
 
@@ -60,5 +68,5 @@ if __name__ == "__main__":
     parser.add_argument('--xmlPath', type=str, required=True, help='xml folder Path')
     parser.add_argument('--save', type=bool, default=True, help='save the Histogram img')
     args = parser.parse_args()
-    
+    checkargs(args)
     statisticalData(args)

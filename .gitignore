@@ -3,6 +3,6 @@ venv/
 110 copy/
 other/
 test/
-vocDataset.py
 test.py
-*.png
+*.txt
+Distribution.png

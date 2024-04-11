@@ -3,91 +3,67 @@ import os
 import argparse
 from pathlib import Path
 
-# file_path = input('.xml資料夾: ')
-# p = Path(file_path)
-# grep_json =  list(p.glob('*.xml'))
-
-# for _ in grep_json:
-#     tree = ET.parse(_, parser = ET.XMLParser(encoding = 'iso-8859-5'))
-#     root = tree.getroot()
-#     for obj in root.iter("object"):
-#         # print(obj.text)
-#         if obj[0].text in ['car_CY', 'car_Doll', 'car_Police', 'car_Postal', 'car_Taxi', 'car_Amb']:
-#             obj[0].text = 'car'
-#         elif obj[0].text in ['truck_CYF', 'truck_CYA', 'truck_Postal', 'truck_ENG']:
-#             obj[0].text = 'truck'
-#         elif obj[0].text in ['spc_Cement', 'spc_Recycling', 'spc_WaterTruck', 'spc_Garbage', 'spc_hearse', 'spc_TankTruck']:
-#             obj[0].text = 'spc'
-#         else:
-#             obj[0].text = obj[0].text
-    
-#     tree = ET.ElementTree(root)
-#     tree.write(_)
 def checkargs(args):
+    # check xml
     if not os.path.exists(args.xmlPath):
         raise FileNotFoundError("xmlPath not found")
     if  not os.path.isdir(args.xmlPath):
         raise Exception("xmlPath not folder")
-
-def readXML(filePath):
-    pass
+    # check class.txt
+    if not os.path.exists(args.originalClass):
+        raise FileNotFoundError("originalClass label file not found")
+    if not os.path.exists(args.newClass):
+        raise FileNotFoundError("newClass label file not found")
     
+
 def readLabel(file):
     className = []
     with open(file, 'r') as f:
-        for label in enumerate(f.read().split('\n')):
-            className.append(label)
+        className = [i.strip() for i in f.readlines()]
+    
+    while className[-1] == "":
+        className.pop()
+        
     return className
 
-
 def main(args):
-    checkargs(args)
-    print(args.replace)
-    # p = Path(args.xmlPath)
-    # grepXML =  list(p.glob('*.xml'))
-    # for filePath in grepXML:
-    #     readXML(filePath)
-#     tree = ET.parse(_, parser = ET.XMLParser(encoding = 'iso-8859-5'))
-#     root = tree.getroot()
-#     for obj in root.iter("object"):
-    # else:
-    #     print(False)
-    # grep_json =  list(p.glob('*.xml'))
-    # print(grep_json)
-# def readXML(args):
-#     p = Path(args.xmlPath)
-#     grep_json =  list(p.glob('*.xml'))
-    # clas = {}
-
-# for _ in grep_json:
-#     tree = ET.parse(_, parser = ET.XMLParser(encoding = 'iso-8859-5'))
-#     root = tree.getroot()
-#     for obj in root.iter("object"):
-#         # print(obj.text)
-#         if obj[0].text in ['car_CY', 'car_Doll', 'car_Police', 'car_Postal', 'car_Taxi', 'car_Amb']:
-#             obj[0].text = 'car'
-#         elif obj[0].text in ['truck_CYF', 'truck_CYA', 'truck_Postal', 'truck_ENG']:
-#             obj[0].text = 'truck'
-#         elif obj[0].text in ['spc_Cement', 'spc_Recycling', 'spc_WaterTruck', 'spc_Garbage', 'spc_hearse', 'spc_TankTruck']:
-#             obj[0].text = 'spc'
-#         else:
-#             obj[0].text = obj[0].text
+    oLabel = readLabel(args.originalClass)
+    nLabel = readLabel(args.newClass)
+   
+    if len(nLabel) > len(oLabel):
+        raise FileNotFoundError("nLabel number more than oLabel number")
+    elif len(oLabel) != len(nLabel):
+        nLabel += ["" for i in range(len(oLabel) - len(nLabel))]
     
-#     tree = ET.ElementTree(root)
-#     tree.write(_)
-# 自定義解析函數，解析 value:value 格式的參數
+    mappingLabel = {k: v for k, v in zip(oLabel, nLabel)}
+
+    p = Path(args.xmlPath)
+    grepXML =  list(p.glob('*.xml'))
+    for filePath in grepXML:
+        tree = ET.parse(filePath, parser = ET.XMLParser(encoding = 'iso-8859-5'))
+        root = tree.getroot()
+        for obj in root.findall("object"):
+            if obj[0].text != mappingLabel[obj[0].text]:
+                if mappingLabel[obj[0].text] == "":
+                    # print(f'remove: {obj[0].text}')
+                    root.remove(obj)
+                else:
+                    # print(f'replcae: {obj[0].text} to {mappingLabel[obj[0].text]}')
+                    obj[0].text = mappingLabel[obj[0].text]
+
+        tree.write(filePath)
+
 
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--xmlPath', type=str, required=True, help='xml folder Path')
-    parser.add_argument('--originalClass', type=str, help='original className file')
-    parser.add_argument('--newClass', type=str, help='new className file')
-    parser.add_argument('--delete', type=str, help='new className file')
+    parser.add_argument('--originalClass', type=str, default='original.txt', required=True, help='original className file')
+    parser.add_argument('--newClass', type=str, required=True, help='new className file')
     args = parser.parse_args()
+    checkargs(args)
+    main(args)
     
-    
-    if args.newClass is not None and args.originalClass is None:
-        parser.error("--newClass 选用时 --originalClass 参数也必须使用")
+
     
